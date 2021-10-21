@@ -24,8 +24,10 @@ def main():
         print()
 
     data_frame = pd.read_csv('results/data.csv')
-    print('Data from CSV:')
-    print(data_frame)
+    _, *lst = [data_frame[column].values.tolist() for column in data_frame]
+    time, case_number, temperature, motion, voltage, *_ = lst
+    # print('Data from CSV:')
+    # print(data_frame)
 
 
 if __name__ == '__main__':
