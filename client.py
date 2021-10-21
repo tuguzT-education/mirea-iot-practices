@@ -3,7 +3,7 @@ import mqtt
 
 def main():
     """
-    Entry point of the program.
+    Entry point of the client.
     """
 
     with mqtt.Client(case_number=15) as client:

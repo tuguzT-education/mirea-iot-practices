@@ -21,15 +21,15 @@ class Client(object):
 
         :param case_number: number of the case to connect to.
         """
-        self.__client_id: Final[str] = 'iot_practice_7'
-        self.__case_number = case_number
+        self.__client_id: Final[str] = 'iot_practices'
+        self.__case_number: Final[int] = case_number
         self.__host: Final[str] = f'192.168.1.{case_number}'
         self.__port: Final[int] = 22
         self.__username: Final[str] = 'root'
         self.__password: Final[str] = 'wirenboard'
-        self.__dump_interval: float = 5
+        self.__dump_interval: Final[float] = 5
 
-        self.__client = mqtt_client.Client(self.__client_id)
+        self.__client: Final[mqtt_client.Client] = mqtt_client.Client(self.__client_id)
         self.__client.username_pw_set(self.__username, self.__password)
         self.__client.on_connect = self.__on_connect
         self.__client.on_disconnect = self.__on_disconnect
@@ -39,12 +39,12 @@ class Client(object):
         self.__client.connect(self.__host, self.__port)
 
         self.__timer: threading.Timer | None = None
-        self.__data: dict[str, Any] = dict(case_number=case_number)
+        self.__data: Final[dict[str, Any]] = dict(case_number=case_number)
 
     def __enter__(self) -> Client:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
         self.stop_dump()
 
     def publish(self, device: str, control: str, payload: str):
