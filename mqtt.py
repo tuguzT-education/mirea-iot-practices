@@ -122,8 +122,8 @@ class Client(object):
             print(data, file=file)
 
         with open(f'results/data.xml', 'w') as file:
-            data = dicttoxml.dicttoxml(self.__data, custom_root='data', attr_type=False).decode('utf-8')
-            data = parseString(data).toprettyxml()
+            data = dicttoxml.dicttoxml(self.__data, custom_root='data', attr_type=False)
+            data = parseString(data).toprettyxml(indent=' ' * 4, encoding='UTF-8').decode('utf-8')
             print(data, file=file, end='')
 
         # noinspection PyTypeChecker
