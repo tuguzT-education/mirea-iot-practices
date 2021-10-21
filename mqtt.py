@@ -1,3 +1,10 @@
+from __future__ import annotations
+
+import datetime
+import json
+import dicttoxml
+from xml.dom.minidom import parseString
+import threading
 from typing import Final, Any
 
 from paho.mqtt import client as mqtt_client
@@ -14,13 +21,13 @@ class Client(object):
 
         :param case_number: number of the case to connect to.
         """
-
         self.__client_id: Final[str] = 'iot_practice_7'
         self.__case_number = case_number
         self.__host: Final[str] = f'192.168.1.{case_number}'
         self.__port: Final[int] = 22
         self.__username: Final[str] = 'root'
         self.__password: Final[str] = 'wirenboard'
+        self.__dump_interval: float = 5
 
         self.__client = mqtt_client.Client(self.__client_id)
         self.__client.username_pw_set(self.__username, self.__password)
@@ -30,6 +37,15 @@ class Client(object):
         self.__client.on_publish = self.__on_publish
         self.__client.connect(self.__host, self.__port)
 
+        self.__timer: threading.Timer | None = None
+        self.__data: dict = dict(case_number=case_number)
+
+    def __enter__(self) -> Client:
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop_dump()
+
     def publish(self, device: str, control: str, payload: str):
         """
         Publishes new message to the specified device and control.
@@ -38,7 +54,6 @@ class Client(object):
         :param control: todo
         :param payload: the message to be published
         """
-
         topic = f'{generate_topic(device, control)}/on'
 
         result: mqtt_client.MQTTMessageInfo = self.__client.publish(topic, payload)
@@ -51,7 +66,6 @@ class Client(object):
         :param device: todo
         :param control: todo
         """
-
         topic = generate_topic(device, control)
 
         result_code: int
@@ -66,7 +80,6 @@ class Client(object):
         :param device: todo
         :param control: todo
         """
-
         topic = generate_topic(device, control)
 
         result_code: int
@@ -83,6 +96,39 @@ class Client(object):
 
         result_code = self.__client.loop_forever(timeout)
         self.__raise_error_if_any(result_code)
+
+    def __dump(self):
+        """
+        Dumps data retrieved from the subscribed MQTT channels to JSON and XML files.
+        """
+        self.start_dump()
+        print('Dumping data...')
+
+        self.__data['time'] = str(datetime.datetime.now())
+
+        with open('result.json', 'w') as file:
+            data = json.dumps(self.__data, indent=4)
+            print(data, file=file)
+
+        with open('result.xml', 'w') as file:
+            data = dicttoxml.dicttoxml(self.__data, custom_root='data', attr_type=False).decode('utf-8')
+            data = parseString(data).toprettyxml()
+            print(data, file=file)
+
+    def start_dump(self):
+        """
+        Starts dumping data retrieved from the subscribed MQTT channels.
+        """
+        self.stop_dump()
+        self.__timer = threading.Timer(self.__dump_interval, self.__dump)
+        self.__timer.start()
+
+    def stop_dump(self):
+        """
+        Stops dumping data retrieved from the subscribed MQTT channels.
+        """
+        if self.__timer is not None:
+            self.__timer.cancel()
 
     # noinspection PyUnusedLocal
     @staticmethod
