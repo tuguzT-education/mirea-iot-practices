@@ -4,7 +4,15 @@ from paho.mqtt import client as mqtt_client
 
 
 class Client(object):
+    """
+    Class for MQTT operations.
+    """
+
     def __init__(self):
+        """
+        Constructs instance of Client class with default host, port, username and password.
+        """
+
         self.__client_id: Final[str] = 'iot_practice_7'
         self.__host: Final[str] = '192.168.1.15'
         self.__port: Final[int] = 22
@@ -20,12 +28,27 @@ class Client(object):
         self.__client.connect(self.__host, self.__port)
 
     def publish(self, device: str, control: str, payload: str):
+        """
+        Publishes new message to the specified device and control.
+
+        :param device: todo
+        :param control: todo
+        :param payload: the message to be published
+        """
+
         topic = generate_topic(device, control)
 
         result: mqtt_client.MQTTMessageInfo = self.__client.publish(topic, payload)
         self.__raise_error_if_any(result.rc)
 
     def subscribe(self, device: str, control: str):
+        """
+        Subscribes to the topic defined by specified device and control.
+
+        :param device: todo
+        :param control: todo
+        """
+
         topic = generate_topic(device, control)
 
         result_code: int
@@ -34,6 +57,13 @@ class Client(object):
         self.__raise_error_if_any(result_code)
 
     def unsubscribe(self, device: str, control: str):
+        """
+        Unsubscribes from the topic defined by specified device and control.
+
+        :param device: todo
+        :param control: todo
+        """
+
         topic = generate_topic(device, control)
 
         result_code: int
@@ -42,6 +72,12 @@ class Client(object):
         self.__raise_error_if_any(result_code)
 
     def loop(self, timeout: int):
+        """
+        todo
+
+        :param timeout: todo
+        """
+
         result_code = self.__client.loop(timeout)
         self.__raise_error_if_any(result_code)
 
@@ -87,4 +123,10 @@ class MQTTException(Exception):
 
 
 def generate_topic(device: str, control: str) -> str:
+    """
+    Generates topic from the device and control for Wirenboard.
+    :param device: todo
+    :param control: todo
+    :return: valid topic for Wirenboard
+    """
     return f'/devices/{device}/controls/{control}'
