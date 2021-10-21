@@ -5,16 +5,19 @@ from paho.mqtt import client as mqtt_client
 
 class Client(object):
     """
-    Class for MQTT operations.
+    Class for MQTT operations on Wirenboard case.
     """
 
-    def __init__(self):
+    def __init__(self, case_number: int):
         """
         Constructs instance of Client class with default host, port, username and password.
+
+        :param case_number: number of the case to connect to.
         """
 
         self.__client_id: Final[str] = 'iot_practice_7'
-        self.__host: Final[str] = '192.168.1.15'
+        self.__case_number = case_number
+        self.__host: Final[str] = f'192.168.1.{case_number}'
         self.__port: Final[int] = 22
         self.__username: Final[str] = 'root'
         self.__password: Final[str] = 'wirenboard'
@@ -36,7 +39,7 @@ class Client(object):
         :param payload: the message to be published
         """
 
-        topic = generate_topic(device, control)
+        topic = f'{generate_topic(device, control)}/on'
 
         result: mqtt_client.MQTTMessageInfo = self.__client.publish(topic, payload)
         self.__raise_error_if_any(result.rc)
@@ -71,25 +74,25 @@ class Client(object):
         result_code, message_id = self.__client.unsubscribe(topic)
         self.__raise_error_if_any(result_code)
 
-    def loop(self, timeout: int):
+    def loop_forever(self, timeout: float = 1.0):
         """
         todo
 
         :param timeout: todo
         """
 
-        result_code = self.__client.loop(timeout)
+        result_code = self.__client.loop_forever(timeout)
         self.__raise_error_if_any(result_code)
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def __on_connect(client: mqtt_client.Client, userdata: Any, flags: Any, rc: int):
-        result = mqtt_client.connack_string(rc)
+    def __on_connect(client: mqtt_client.Client, userdata: Any, flags: Any, result_code: int):
+        result = mqtt_client.connack_string(result_code)
         print(f'Connected with result "{result}"')
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def __on_disconnect(client: mqtt_client.Client, userdata: Any, rc: int):
+    def __on_disconnect(client: mqtt_client.Client, userdata: Any, result_code: int):
         pass
 
     # noinspection PyUnusedLocal
