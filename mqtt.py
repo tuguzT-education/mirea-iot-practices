@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import datetime
 import json
-import dicttoxml
-from xml.dom.minidom import parseString
 import threading
 from typing import Final, Any
+from xml.dom.minidom import parseString
 
+import dicttoxml
 from paho.mqtt import client as mqtt_client
 
 
@@ -35,10 +35,11 @@ class Client(object):
         self.__client.on_disconnect = self.__on_disconnect
         self.__client.on_message = self.__on_message
         self.__client.on_publish = self.__on_publish
+        self.__client.user_data_set(self)
         self.__client.connect(self.__host, self.__port)
 
         self.__timer: threading.Timer | None = None
-        self.__data: dict = dict(case_number=case_number)
+        self.__data: dict[str, Any] = dict(case_number=case_number)
 
     def __enter__(self) -> Client:
         return self
@@ -132,23 +133,26 @@ class Client(object):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def __on_connect(client: mqtt_client.Client, userdata: Any, flags: Any, result_code: int):
+    def __on_connect(client: mqtt_client.Client, self: Client, flags: Any, result_code: int):
         result = mqtt_client.connack_string(result_code)
         print(f'Connected with result "{result}"')
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def __on_disconnect(client: mqtt_client.Client, userdata: Any, result_code: int):
+    def __on_disconnect(client: mqtt_client.Client, self: Client, result_code: int):
         pass
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def __on_message(client: mqtt_client.Client, userdata: Any, message: mqtt_client.MQTTMessage):
-        print(f'The message received: topic is "{message.topic}", payload is "{str(message.payload)}"')
+    def __on_message(client: mqtt_client.Client, self: Client, message: mqtt_client.MQTTMessage):
+        topic = message.topic
+        payload = message.payload.decode("utf-8")
+        print(f'The message received: topic is "{topic}", payload is "{payload}"')
+        self.__data[topic] = payload
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def __on_publish(client: mqtt_client.Client, userdata: Any, message_id: int):
+    def __on_publish(client: mqtt_client.Client, self: Client, message_id: int):
         pass
 
     @staticmethod
