@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import copy
 import datetime
 import json
+import pathlib
 import threading
 from typing import Final, Any
 from xml.dom.minidom import parseString
 
 import dicttoxml
+import pandas
 from paho.mqtt import client as mqtt_client
 
 
@@ -27,7 +30,7 @@ class Client(object):
         self.__port: Final[int] = 22
         self.__username: Final[str] = 'root'
         self.__password: Final[str] = 'wirenboard'
-        self.__dump_interval: Final[float] = 5
+        self.__dump_interval: Final[float] = 2
 
         self.__client: Final[mqtt_client.Client] = mqtt_client.Client(self.__client_id)
         self.__client.username_pw_set(self.__username, self.__password)
@@ -39,7 +42,8 @@ class Client(object):
         self.__client.connect(self.__host, self.__port)
 
         self.__timer: threading.Timer | None = None
-        self.__data: Final[dict[str, Any]] = dict(case_number=case_number)
+        self.__data: Final[list[dict[str, Any]]] = list()
+        self.__last_data: Final[dict[str, Any]] = dict()
 
     def __enter__(self) -> Client:
         return self
@@ -105,16 +109,25 @@ class Client(object):
         self.start_dump()
         print('Dumping data...')
 
-        self.__data['time'] = str(datetime.datetime.now())
+        time = str(datetime.datetime.now())
+        self.__last_data['time'] = time
+        self.__last_data['case_number'] = self.__case_number
+        deepcopy = copy.deepcopy(self.__last_data)
+        self.__data.append(deepcopy)
 
-        with open('result.json', 'w') as file:
+        pathlib.Path('results').mkdir(exist_ok=True)
+
+        with open(f'results/data.json', 'w') as file:
             data = json.dumps(self.__data, indent=4)
             print(data, file=file)
 
-        with open('result.xml', 'w') as file:
+        with open(f'results/data.xml', 'w') as file:
             data = dicttoxml.dicttoxml(self.__data, custom_root='data', attr_type=False).decode('utf-8')
             data = parseString(data).toprettyxml()
-            print(data, file=file)
+            print(data, file=file, end='')
+
+        # noinspection PyTypeChecker
+        pandas.DataFrame(self.__data).to_csv('results/data.csv')
 
     def start_dump(self):
         """
@@ -148,7 +161,7 @@ class Client(object):
         topic = message.topic
         payload = message.payload.decode("utf-8")
         print(f'The message received: topic is "{topic}", payload is "{payload}"')
-        self.__data[topic] = payload
+        self.__last_data[topic] = payload
 
     # noinspection PyUnusedLocal
     @staticmethod
