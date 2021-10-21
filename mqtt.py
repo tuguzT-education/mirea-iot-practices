@@ -109,8 +109,7 @@ class Client(object):
     def __raise_error_if_any(error_code: int):
         if error_code != mqtt_client.MQTT_ERR_SUCCESS:
             error = mqtt_client.error_string(error_code)
-            if error != "Unknown error.":
-                raise MQTTException(error)
+            raise MQTTException(error)
 
 
 class MQTTException(Exception):
