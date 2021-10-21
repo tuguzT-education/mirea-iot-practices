@@ -9,7 +9,7 @@ from typing import Final, Any
 from xml.dom.minidom import parseString
 
 import dicttoxml
-import pandas
+import pandas as pd
 from paho.mqtt import client as mqtt_client
 
 
@@ -127,7 +127,7 @@ class Client(object):
             print(data, file=file, end='')
 
         # noinspection PyTypeChecker
-        pandas.DataFrame(self.__data).to_csv('results/data.csv')
+        pd.DataFrame(self.__data).to_csv('results/data.csv')
 
     def start_dump(self):
         """

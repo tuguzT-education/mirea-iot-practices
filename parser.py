@@ -1,6 +1,8 @@
 import json
+from pprint import pprint
 
 import xmltodict
+import pandas as pd
 
 
 def main():
@@ -8,14 +10,22 @@ def main():
     Entry point of the parser.
     """
 
-    with open('result.json', 'r') as file:
+    with open('results/data.json', 'r') as file:
         data = json.load(file)
-        print(f'Data from JSON: {data}')
+        print('Data from JSON:')
+        pprint(data)
+        print()
 
-    with open('result.xml', 'r') as file:
+    with open('results/data.xml', 'r') as file:
         data = file.read()
-        data = dict(xmltodict.parse(data)['data'])
-        print(f'Data from XML: {data}')
+        data = [dict(item) for item in xmltodict.parse(data)['data']['item']]
+        print('Data from XML:')
+        pprint(data)
+        print()
+
+    data_frame = pd.read_csv('results/data.csv')
+    print('Data from CSV:')
+    print(data_frame)
 
 
 if __name__ == '__main__':
