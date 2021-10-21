@@ -16,6 +16,7 @@ class Client(object):
         self.__client.on_connect = self.__on_connect
         self.__client.on_disconnect = self.__on_disconnect
         self.__client.on_message = self.__on_message
+        self.__client.on_publish = self.__on_publish
         self.__client.connect(self.__host, self.__port)
 
     def publish(self, device: str, control: str, payload: str):
@@ -53,12 +54,17 @@ class Client(object):
     # noinspection PyUnusedLocal
     @staticmethod
     def __on_disconnect(client: mqtt_client.Client, userdata: Any, rc: int):
-        print('Disconnected')
+        pass
 
     # noinspection PyUnusedLocal
     @staticmethod
     def __on_message(client: mqtt_client.Client, userdata: Any, message: mqtt_client.MQTTMessage):
         print(f'The message received: topic is "{message.topic}", payload is "{str(message.payload)}"')
+
+    # noinspection PyUnusedLocal
+    @staticmethod
+    def __on_publish(client: mqtt_client.Client, userdata: Any, message_id: int):
+        pass
 
     @staticmethod
     def __raise_error_if_any(error_code: int):
