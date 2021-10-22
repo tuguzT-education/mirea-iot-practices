@@ -27,7 +27,6 @@ class Client(object):
         self.__client_id: Final[str] = 'iot_practices'
         self.__case_number: Final[int] = case_number
         self.__host: Final[str] = f'192.168.1.{case_number}'
-        self.__port: Final[int] = 22
         self.__username: Final[str] = 'root'
         self.__password: Final[str] = 'wirenboard'
         self.__dump_interval: Final[float] = 2
@@ -39,7 +38,9 @@ class Client(object):
         self.__client.on_message = self.__on_message
         self.__client.on_publish = self.__on_publish
         self.__client.user_data_set(self)
-        self.__client.connect(self.__host, self.__port)
+
+        result_code = self.__client.connect(self.__host)
+        self.__raise_error_if_any(result_code)
 
         self.__timer: threading.Timer | None = None
         self.__data: Final[list[dict[str, Any]]] = list()
@@ -161,7 +162,10 @@ class Client(object):
         topic = message.topic
         payload = message.payload.decode("utf-8")
         print(f'The message received: topic is "{topic}", payload is "{payload}"')
-        self.__last_data[topic] = payload
+
+        key = topic.split('/')
+        key: str = key[len(key) - 1].lower()
+        self.__last_data[key] = payload
 
     # noinspection PyUnusedLocal
     @staticmethod

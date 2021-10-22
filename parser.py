@@ -5,6 +5,22 @@ import xmltodict
 import pandas as pd
 
 
+def group_by(iterable: list[float], count: int, round_digits: int) -> list[int] | tuple[list[int], list[str]]:
+    if count <= 1:
+        return [len(iterable)]
+    mi = min(iterable)
+    ma = max(iterable)
+    step = (ma - mi) / (count - 1)
+    counts = [0 for _ in range(count)]
+    for i in iterable:
+        counts[round((i - mi) / step)] += 1
+    labels = [
+        f'{round(mi + i * step, round_digits)}-{round(mi + (i + 1) * step, round_digits)}'
+        for i in range(len(counts))
+    ]
+    return counts, labels
+
+
 def main():
     """
     Entry point of the parser.
