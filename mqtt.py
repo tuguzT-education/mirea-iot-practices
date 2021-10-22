@@ -29,7 +29,7 @@ class Client(object):
         self.__host: Final[str] = f'192.168.1.{case_number}'
         self.__username: Final[str] = 'root'
         self.__password: Final[str] = 'wirenboard'
-        self.__dump_interval: Final[float] = 2
+        self.__dump_interval: Final[float] = 5
 
         self.__client: Final[mqtt_client.Client] = mqtt_client.Client(self.__client_id)
         self.__client.username_pw_set(self.__username, self.__password)

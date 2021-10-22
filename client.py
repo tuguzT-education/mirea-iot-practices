@@ -11,10 +11,8 @@ def main():
         client.subscribe(device='wb-msw-v3_21', control='Temperature')
         # Датчик движения устройства WB-MSW v.3
         client.subscribe(device='wb-msw-v3_21', control='Current Motion')
-        # Датчик шума устройства WB-MSW v.3
-        client.subscribe(device='wb-msw-v3_21', control='Sound Level')
-        # Датчик освещенности устройства WB-MS v.2
-        client.subscribe(device='wb-ms_11', control='Illuminance')
+        # Напряжение на любом устройстве стенда
+        client.subscribe(device='wb-msw-v3_21', control='Input Voltage')
 
         client.start_dump()
         client.loop_forever()

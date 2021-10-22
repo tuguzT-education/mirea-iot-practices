@@ -1,8 +1,9 @@
 import json
 from pprint import pprint
 
-import xmltodict
+import matplotlib.pyplot as plt
 import pandas as pd
+import xmltodict
 
 
 def group_by(iterable: list[float], count: int, round_digits: int) -> list[int] | tuple[list[int], list[str]]:
@@ -41,9 +42,27 @@ def main():
 
     data_frame = pd.read_csv('results/data.csv')
     _, *lst = [data_frame[column].values.tolist() for column in data_frame]
-    time, case_number, temperature, motion, voltage, *_ = lst
-    # print('Data from CSV:')
-    # print(data_frame)
+    temperature, motion, voltage, time, case_number, *_ = lst
+
+    temperature, labels = group_by(temperature, 4, 5)
+    plt.xlabel('Интервалы температуры')
+    plt.ylabel('Частота записей')
+    plt.title('Температура')
+    plt.xticks(range(len(temperature)), labels)
+    plt.bar(range(len(temperature)), temperature)
+    plt.show()
+
+    plt.plot(motion)
+    plt.ylabel('Значения движения')
+    plt.xlabel('Номер измерения')
+    plt.title('Движение')
+    plt.show()
+
+    v, labels = group_by(voltage, 5, 3)
+    plt.pie(v, labels=labels, autopct=lambda x: round(x / 100 * len(voltage)))
+    plt.xlabel('Интервалы напряжения')
+    plt.title('Напряжение')
+    plt.show()
 
 
 if __name__ == '__main__':
